@@ -16,7 +16,7 @@ Because the data are too large to ship inside the package, they are hosted on `A
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
-BiocManager::install(c("AnnotationHub", "methylTFRAnnotationHg38"))
+BiocManager::install(c("AnnotationHub","GenomicRanges", "methylTFRAnnotationHg38"))
 ```
 
 ## Usage
