@@ -126,4 +126,10 @@ write.csv(
   quote = TRUE  # This ensures strings containing spaces/commas are properly enclosed
 )
 
-message("metadata.csv has been successfully generated in inst/extdata/")
+# Validate using AnnotationHubData
+if (!requireNamespace("AnnotationHubData", quietly = TRUE)) {
+    message("Please install AnnotationHubData to validate your metadata.csv")
+} else {
+    AnnotationHubData::makeAnnotationHubMetadata("inst/extdata")
+    message("Metadata validation completed successfully!")
+}
