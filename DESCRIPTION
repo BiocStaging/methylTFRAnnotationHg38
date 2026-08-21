@@ -11,7 +11,8 @@ Description: Precomputed transcription factor binding sites, motif GC
     documentation.
 Authors@R: person(
     given = "Irem B.", family = "Gunduz",
-    email = "irembgunduz@gmail.com", role = c("aut", "cre"))
+    email = "irembgunduz@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-2641-0916"))
 License: Artistic-2.0
 Encoding: UTF-8
 Version: 0.99.0
