@@ -1,231 +1,214 @@
-## How the data in this package were produced
-##
-## Every object was built by methylTFRAnnotationBuilder from
-## BSgenome.Hsapiens.UCSC.hg38 and the JASPAR2020 motif set.
-##
-## The build script is reproduced below. It is the script that
-## generated the files submitted to AnnotationHub.
+# How the methylTFRAnnotationHg38 resources were produced
+#
+# Every resource is built by methylTFRAnnotationBuilder
+# (https://github.com/EpigenomeInformatics/methylTFRAnnotationBuilder)
+# from a BSgenome sequence and a collection of position weight
+# matrices. This script records that build and regenerates the files.
+#
+# Four kinds of resource:
+#
+#   <set>_tf_bindsites.rds          GRangesList, one GRanges per motif
+#   <set>_motif_gcfreq.rds          list of 5 x n matrices, one per motif
+#   genomewide_GC_hg38.rds          GRanges of 30 nt windows with GC bins
+#   <set>_distal_motif_gcfreq.rds   as above, distal regions only
+#
+# The genome GC scan takes about a minute. Motif matching and the GC
+# frequency tables take several hours per motif set on 24 and 8 cores
+# respectively.
 
-#!/usr/bin/env Rscript
-
-#####################################################################
-# 02_build_jaspar2020.R
-#
-# Builds methylTFRAnnotationHg38 for the JASPAR2020 motif set in
-# /scratch/icbb/igunduz/mtfr_annotation_test
-#
-# The expensive step, motif matching across the genome, is skipped if a
-# binding-site file is already present. Copy the existing one into
-# place first (see PREREQUISITES) and the script only computes the GC
-# annotations.
-#
-# The script is resumable. Every artefact is skipped if it already
-# exists, so it can be re-run after an interruption.
-#
-# Run:
-#     cd /scratch/icbb/igunduz/mtfr_annotation_test
-#     Rscript 02_build_jaspar2020.R 2>&1 | tee build.log
-#
-#####################################################################
-#
-# PREREQUISITES
-#
-# Copy the existing binding sites into the package's extdata folder,
-# under a LOWER CASE name. The builder now normalises file names to
-# lower case on both the writing and the reading side, so a file named
-# JASPAR2020_tf_bindsites.rds will not be found:
-#
-#     mkdir -p /scratch/icbb/igunduz/mtfr_annotation_test/methylTFRAnnotationHg38/inst/extdata
-#     cp /path/to/JASPAR2020_tf_bindsites.rds \
-#        /scratch/icbb/igunduz/mtfr_annotation_test/methylTFRAnnotationHg38/inst/extdata/jaspar2020_tf_bindsites.rds
-#
-# Do NOT copy the old genomewide_GC_hg38.rds. It was built with
-# per-chromosome GC bins and at every genomic position; this run
-# produces genome-wide bins restricted to CpG sites, and mixing the two
-# would leave the observed and expected sides of a deviation score
-# binned on different scales.
-#
-#####################################################################
-
-set.seed(42)
-suppressPackageStartupMessages({
-    library(BSgenome.Hsapiens.UCSC.hg38)
-    library(GenomicRanges)
-    library(logger)
-    library(methylTFRAnnotationBuilder)
-})
-
-## ------------------------------------------------------------------
-## Configuration
-## ------------------------------------------------------------------
-
-base_dir <- "/scratch/icbb/igunduz/mtfr_annotation_test"
-assembly <- "Hg38"
-motif_set <- "jaspar2020"
-cores <- 24 # capped by chromosome count; more than 24 gains nothing
-chunk_size <- 15 # motifs per chunk in the GC frequency step
-
-# Optional. Restricting the GC table to windows that overlap a CpG is
-# exactly equivalent to the full table for CpG methylomes, and shrinks
-# it by roughly threefold. It costs an extra pass over the genome, so it
-# is off by default; turn it on only if the GC table turns out to be a
-# problem.
-restrict_to_cpg <- FALSE
-
-# Also build the distal-restricted GC frequency table. Requires a
-# GRanges of distal regions; set to NULL to skip.
-distal_rds <- "/icbb/projects/share/annotations/methylTFRAnnotationHg38/inst/extdata/distal_regions.RDS"
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(TFBSTools)
+library(GenomicRanges)
+library(BiocParallel)
+library(methylTFRAnnotationBuilder)
 
 genome <- BSgenome.Hsapiens.UCSC.hg38
-pkg_dir <- file.path(base_dir, paste0("methylTFRAnnotation", assembly))
+pkg_dir <- "methylTFRAnnotationHg38"
 extdata <- file.path(pkg_dir, "inst", "extdata")
-cpg_cache <- file.path(base_dir, "cpg_sites_hg38.rds")
 
-## ------------------------------------------------------------------
-## Pre-flight
-## ------------------------------------------------------------------
+# chr1-22, X and Y. chrM is excluded: its GC content and its
+# methylation are both atypical, and 16 kb contributes nothing to
+# genome-wide quantiles.
+chromosomes <- standardChrs(genome)
 
-if (!dir.exists(base_dir)) {
-    dir.create(base_dir, recursive = TRUE)
-}
-setwd(base_dir)
 
-log_info("Base directory: {base_dir}")
-free_gb <- tryCatch({
-    df <- system2("df", c("-BG", shQuote(base_dir)), stdout = TRUE)
-    as.numeric(sub("G", "", strsplit(trimws(df[2]), "\\s+")[[1]][4]))
-}, error = function(e) NA_real_)
-if (!is.na(free_gb)) {
-    log_info("Free space: {free_gb} GB")
-    if (free_gb < 20) {
-        log_warn("Less than 20 GB free. The temp chunk files and the ",
-            "binding-site object both need room.")
-    }
-}
+# ------------------------------------------------------------------
+# 1. Motif collections
+# ------------------------------------------------------------------
 
-build_distal <- !is.null(distal_rds) && file.exists(distal_rds)
-if (!is.null(distal_rds) && !build_distal) {
-    log_warn("Distal regions not found at {distal_rds}; skipping the distal table.")
-}
+# --- jaspar2020 ---------------------------------------------------
+# JASPAR2020 CORE filtered to Homo sapiens (NCBI taxonomy 9606): 629
+# matrices, converted from counts to PWMs. Keyed on the JASPAR TF
+# name.
 
-motif_sets_declared <- if (build_distal) {
-    c(motif_set, paste0(motif_set, "_distal"))
-} else {
-    motif_set
-}
-
-## ------------------------------------------------------------------
-## 1. Package scaffold
-## ------------------------------------------------------------------
-
-if (!dir.exists(pkg_dir)) {
-    log_info("Creating package scaffold for {assembly} ...")
-    createMethylTFRPackageScaffold(
-        assembly = assembly,
-        dest = base_dir,
-        motifSets = motif_sets_declared
+jaspar2020 <- TFBSTools::toPWM(
+    TFBSTools::getMatrixSet(
+        JASPAR2020::JASPAR2020,
+        list(species = 9606, collection = "CORE")
     )
-} else {
-    log_info("Scaffold already exists at {pkg_dir}; reusing it.")
-}
-dir.create(extdata, showWarnings = FALSE, recursive = TRUE)
-
-tf_file <- file.path(extdata, paste0(motif_set, "_tf_bindsites.rds"))
-if (file.exists(tf_file)) {
-    log_success("Found existing binding sites: {basename(tf_file)} ",
-        "({round(file.size(tf_file) / 1e9, 2)} GB). Motif matching will be skipped.")
-} else {
-    log_warn("No binding-site file at {tf_file}.")
-    log_warn("Motif matching will run from scratch, which takes hours.")
-    log_warn("To reuse an existing file, copy it there under that exact name.")
-}
-
-## ------------------------------------------------------------------
-## 2. CpG positions
-## ------------------------------------------------------------------
-
-gc_sites <- NULL
-if (restrict_to_cpg) {
-    if (file.exists(cpg_cache)) {
-        log_info("Loading cached CpG positions ...")
-        gc_sites <- readRDS(cpg_cache)
-    } else {
-        log_info("Locating CpG positions genome-wide (one pass, ~10-20 min) ...")
-        t0 <- Sys.time()
-        gc_sites <- cpgSites(genome)
-        log_success("Found {format(length(gc_sites), big.mark = ',')} CpGs ",
-            "in {round(difftime(Sys.time(), t0, units = 'mins'), 1)} min.")
-        saveRDS(gc_sites, cpg_cache)
-    }
-    log_info("GC table will be restricted to {format(length(gc_sites), big.mark = ',')} positions.")
-} else {
-    log_warn("Building the GC table at every genomic position. ",
-        "Expect a very large object.")
-}
-
-## ------------------------------------------------------------------
-## 3. Genome-wide annotations and the motif GC frequency table
-## ------------------------------------------------------------------
-
-log_info("Building annotations for {motif_set} ...")
-t0 <- Sys.time()
-build_annotations(
-    annotations = motif_set,
-    pkg.base.dir = pkg_dir,
-    chunk_size = chunk_size,
-    genome = genome,
-    cores = cores,
-    enhancer = NULL,
-    keep_score = FALSE, # methylTFR never reads it
-    gc_sites = gc_sites,
-    bin_scope = "genome" # matches the quantiles used for the GC freq tables
 )
-log_success("Done in {round(difftime(Sys.time(), t0, units = 'mins'), 1)} min.")
 
-## ------------------------------------------------------------------
-## 4. Distal-restricted GC frequency table
-## ------------------------------------------------------------------
-## Only the GC frequency table differs; the binding sites are the same
-## object. That is why getTFbindsites() has no "jaspar2020_distal"
-## entry and analysis code passes "jaspar2020" for the binding sites
-## while passing "jaspar2020_distal" for the GC frequencies.
+# --- cisbpv2 ------------------------------------------------------
+# CIS-BP version 2, from the chromVARmotifs package
+# (https://github.com/GreenleafLab/chromVARmotifs), distributed on
+# GitHub only. human_pwms_v2 here; mm10 uses mouse_pwms_v2, 884
+# matrices. chromVARmotifs' own names are kept unchanged.
 
-if (build_distal) {
-    log_info("Building the distal-restricted GC frequency table ...")
-    distal <- readRDS(distal_rds)
-    t0 <- Sys.time()
+utils::data("human_pwms_v2", package = "chromVARmotifs")
+cisbpv2 <- chromVARmotifs::human_pwms_v2
+
+# --- altius -------------------------------------------------------
+# Vierstra motif archetypes v1.0
+# (https://www.vierstra.org/resources/motif_clustering): 286 clusters
+# derived from 2,179 motif models drawn from JASPAR, HOCOMOCO, JOLMA,
+# TRANSFAC and others. Resources are keyed on the cluster identifier.
+##
+# These are supplied as genomic positions, not as PWMs, so they do not
+# go through findTFBindSites(). The hg38 sites were obtained with
+# ChrAccR::getMotifClusterAnnot_altius(), which downloads a
+# precomputed tfMotifClusters_hg38.rds. 
+##
+# Both routes apply the same reduction. Occurrences from every cluster
+# are pooled, overlaps are resolved in favour of the higher MOODS
+# score, and the survivors are split back out by cluster. That
+# competition is global, so one archetype can take a locus from
+# another. Resizing to the footprint width happens after the
+# reduction; doing it first would let widened neighbours exclude each
+# other and change which matches survive.
+
+altius <- readRDS("altius_tf_bindsites.rds") # see above for provenance
+
+
+# ------------------------------------------------------------------
+# 2. Binding sites
+# ------------------------------------------------------------------
+
+# matchMotifs(out = "positions") runs once per chromosome, matching
+# every motif of a set in the same pass.
+##
+# Each match is widened to motif width + 400. That width matters:
+# methylTFR::computeDeviation() widens the stored range by a further
+# 130 bases and reads methylation across offsets -250 to +250 from the
+# midpoint, so a narrower stored range truncates every footprint
+# without any error being raised.
+##
+# The motif match score is dropped. methylTFR never reads it, and it
+# costs eight bytes on each of several hundred million sites.
+
+for (set in c("jaspar2020", "cisbpv2")) {
+    out <- file.path(extdata, paste0(set, "_tf_bindsites.rds"))
+    if (file.exists(out)) next
+    saveRDS(
+        findTFBindSites(
+            genome = genome,
+            motifs = get(set),
+            BPPARAM = MulticoreParam(workers = 24),
+            keep_score = FALSE,
+            flank = 400,
+            chromosomes = chromosomes
+        ),
+        out
+    )
+}
+
+
+# ------------------------------------------------------------------
+# 3. Genome-wide GC distribution
+# ------------------------------------------------------------------
+
+# GC content in non-overlapping 30 nt windows: 102,942,317 windows for
+# hg38, one per 30 bases of the primary chromosomes.
+##
+# GC is the count of C and G divided by the window width. Dividing by
+# the number of called bases instead makes an all-N window 0/0, and
+# any step that then drops those windows leaves every later value
+# misaligned from the coordinates it is stored against. Dividing by
+# the width scores a gap window 0 and keeps it in place.
+##
+# Windows are assigned to five bins delimited by quantiles of the
+# genome-wide GC distribution. Those boundaries are stored on the
+# object as metadata(gc)$gc_breaks, and build_annotations() reads them
+# from there when binning the motif frequency tables in section 4, so
+# the observed and expected sides of a deviation score are guaranteed
+# to use the same scale.
+
+gc_file <- file.path(extdata, "genomewide_GC_hg38.rds")
+if (!file.exists(gc_file)) {
+    saveRDS(
+        computeGCgenome(
+            genome = genome,
+            cores = 12,
+            step = 30L,
+            bin_scope = "genome",
+            chromosomes = chromosomes
+        ),
+        gc_file
+    )
+}
+
+
+# ------------------------------------------------------------------
+# 4. Motif GC frequency tables
+# ------------------------------------------------------------------
+
+# For each motif, and each offset along its footprint window, the
+# proportion of that motif's binding sites whose local 30 nt GC
+# content falls in each of the five bins. Columns sum to one.
+##
+# This is the expected side of the deviation score. Multiplying the
+# table by a sample's per-GC-bin mean methylation predicts the
+# methylation profile from sequence composition alone, which is then
+# subtracted from the observed profile.
+##
+# build_annotations() reads the binding sites and the genome GC table
+# from inst/extdata and skips any resource already present, so it is
+# safe to re-run after an interruption.
+
+for (set in c("jaspar2020", "cisbpv2", "altius")) {
     build_annotations(
-        annotations = motif_set,
+        annotations = set,
         pkg.base.dir = pkg_dir,
-        chunk_size = chunk_size,
+        chunk_size = 15,
         genome = genome,
-        cores = cores,
-        enhancer = distal,
+        cores = 8,
+        enhancer = NULL,
         keep_score = FALSE,
-        gc_sites = gc_sites,
-        bin_scope = "genome"
+        step = 30L,
+        bin_scope = "genome",
+        chromosomes = chromosomes
     )
-    log_success("Done in {round(difftime(Sys.time(), t0, units = 'mins'), 1)} min.")
 }
 
-## ------------------------------------------------------------------
-## 5. Report
-## ------------------------------------------------------------------
 
-files <- list.files(extdata, full.names = TRUE)
-sizes <- vapply(files, file.size, numeric(1))
-report <- data.frame(
-    file = basename(files),
-    MB = round(sizes / 1e6, 1),
-    row.names = NULL
+# ------------------------------------------------------------------
+# 5. Distal-restricted frequency table
+# ------------------------------------------------------------------
+
+# jaspar2020_distal is section 4 restricted to binding sites
+# overlapping distal regulatory regions. Only the frequency table
+# differs; the binding sites are the unrestricted ones. That is why
+# getTFbindsites() has no jaspar2020_distal entry, and why analysis
+# code passes "jaspar2020" for the sites and "jaspar2020_distal" for
+# the frequencies.
+##
+# distal_regions.RDS: Taken from Ensembl Regulatory Build v104, filtered 
+# to hg38 and to distal Which annotation the transcription start sites came 
+# from, what distance threshold separates distal from proximal, and which build.
+# Without it this resource cannot be reproduced.
+
+distal <- readRDS("distal_regions.RDS")
+
+build_annotations(
+    annotations = "jaspar2020",
+    pkg.base.dir = pkg_dir,
+    chunk_size = 15,
+    genome = genome,
+    cores = 8,
+    enhancer = distal,
+    keep_score = FALSE,
+    step = 30L,
+    bin_scope = "genome",
+    chromosomes = chromosomes
 )
-report <- report[order(-report$MB), ]
 
-cat("\n---------------- inst/extdata ----------------\n")
-print(report, row.names = FALSE)
-cat(sprintf("%-44s %8.1f\n", "TOTAL", sum(report$MB)))
-cat("----------------------------------------------\n\n")
-
-log_info("Install with:")
-log_info("    R CMD INSTALL {pkg_dir}")
-log_info("Then verify with:  Rscript 03_verify.R")
+sessionInfo()
