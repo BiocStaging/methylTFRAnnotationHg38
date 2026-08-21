@@ -19,8 +19,8 @@ Depends: R (>= 4.5.0)
 Imports: AnnotationHub, GenomicRanges, utils
 Suggests: knitr, rmarkdown, testthat (>= 3.0.0), BiocStyle
 VignetteBuilder: knitr
-biocViews: AnnotationHub, AnnotationData, FunctionalAnnotation,
-    Homo_sapiens_Data, SequenceAnnotation
+biocViews: AnnotationData, AnnotationHub, FunctionalAnnotation,
+    SequenceAnnotation, Homo_sapiens
 BugReports: https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38/issues
 URL: https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38
 RoxygenNote: 7.3.3
