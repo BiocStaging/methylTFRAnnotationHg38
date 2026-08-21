@@ -1,4 +1,4 @@
-# ==============================================================================
+# #################################################################################
 # How the methylTFRAnnotationHg38 resources were produced
 #
 # Every resource is built by methylTFRAnnotationBuilder
@@ -16,7 +16,7 @@
 #   - jaspar2020: JASPAR2020 CORE (Homo sapiens)
 #   - cisbpv2:    CIS-BP v2 (human_pwms_v2 from chromVARmotifs)
 #   - altius:     Vierstra motif archetypes v1.0 (from hg38 archetype BED scan)
-# ==============================================================================
+# #################################################################################
 
 library(BSgenome.Hsapiens.UCSC.hg38)
 library(TFBSTools)
@@ -34,9 +34,9 @@ dir.create(extdata, recursive = TRUE, showWarnings = FALSE)
 chromosomes <- standardChrs(genome)
 
 
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # 1. Altius Archetypes v1.0 Binding Sites
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # Source: https://www.vierstra.org/resources/motif_clustering
 # File: hg38.archetype_motifs.v1.0.bed.gz (286 archetype clusters)
 #
@@ -123,9 +123,9 @@ if (!file.exists(altius_out)) {
 }
 
 
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # 2. PWM-based Binding Sites (JASPAR2020 & CIS-BP v2)
-# ------------------------------------------------------------------------------
+# ##############################################################################
 
 # --- JASPAR2020 ---
 # CORE filtered to Homo sapiens (NCBI taxonomy 9606): 629 matrices.
@@ -159,9 +159,9 @@ for (set in c("jaspar2020", "cisbpv2")) {
 }
 
 
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # 3. Genome-wide GC Distribution
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # Non-overlapping 30 nt windows across primary hg38 chromosomes, binned into
 # genome-wide GC quintiles.
 
@@ -180,9 +180,9 @@ if (!file.exists(gc_file)) {
 }
 
 
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # 4. Motif GC Frequency Tables
-# ------------------------------------------------------------------------------
+# ##############################################################################
 
 for (set in c("jaspar2020", "cisbpv2", "altius")) {
     out <- file.path(extdata, paste0(set, "_motif_gcfreq.rds"))
@@ -204,9 +204,9 @@ for (set in c("jaspar2020", "cisbpv2", "altius")) {
 }
 
 
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # 5. Distal-restricted Frequency Table
-# ------------------------------------------------------------------------------
+# ##############################################################################
 # Section 4 restricted to binding sites overlapping distal regulatory regions. 
 # Only the frequency table differs; the binding sites are the unrestricted ones.
 #
