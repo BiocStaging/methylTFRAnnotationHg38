@@ -33,9 +33,34 @@ The data are too large to ship inside the package, so they are
 hosted on AnnotationHub and downloaded on first use. Subsequent
 calls are served from the local AnnotationHub cache.
 
+```{r dummy, include = FALSE}
+# HIDDEN CHUNK: Set up mock data so the vignette chunks can evaluate
+mock_dir <- tempdir()
+
+# 1. Mock TF bindsites
+mock_grl <- GenomicRanges::GRangesList(
+    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
+)
+saveRDS(mock_grl, file.path(mock_dir, "altius_tf_bindsites.rds"))
+
+# 2. Mock GC frequencies
+mock_gcfreq <- list(mock_motif_1 = matrix(0.25, nrow = 5, ncol = 4))
+saveRDS(mock_gcfreq, file.path(mock_dir, "altius_motif_gcfreq.rds"))
+
+# 3. Mock Genome GC
+mock_gr <- GenomicRanges::GRanges("chr1:1-100")
+mock_gr$GC_bias <- 0.5
+mock_gr$GC_bin <- 1L
+saveRDS(mock_gr, file.path(mock_dir, "genomewide_GC_hg38.rds"))
+
+# Temporarily point the package to tempdir
+old_opt <- getOption("methylTFRAnnotationHg38.datadir")
+options(methylTFRAnnotationHg38.datadir = mock_dir)```
+```
+
 # Usage
 
-```{r, eval = FALSE}
+```{r}
 library(methylTFRAnnotationHg38)
 
 tf_bindsites <- getTFbindsites("altius")
@@ -57,4 +82,9 @@ Sets ending in `_distal` provide GC frequency tables computed over distal regula
 
 ```{r}
 sessionInfo()
+```
+
+```{r cleanup, include = FALSE}
+# HIDDEN CHUNK: Clean up the options
+options(methylTFRAnnotationHg38.datadir = old_opt)
 ```
