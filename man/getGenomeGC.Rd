@@ -19,7 +19,7 @@ Downloaded from AnnotationHub on first use and cached locally
 thereafter.
 }
 \examples{
-\donttest{
+\dontrun{
 gc <- getGenomeGC()
 }
 }

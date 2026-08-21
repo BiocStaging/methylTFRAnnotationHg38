@@ -3,3 +3,5 @@
 export(getGCfreq)
 export(getGenomeGC)
 export(getTFbindsites)
+import(GenomicRanges)
+importFrom(utils,packageVersion)

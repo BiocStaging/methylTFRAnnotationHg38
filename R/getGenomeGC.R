@@ -5,8 +5,10 @@
 #' @param assembly Genome assembly. Defaults to the assembly this
 #' package was built for.
 #' @return A \code{GRanges} with GC_bias and GC_bin metadata columns.
+#' @import GenomicRanges
+#' @importFrom utils packageVersion
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' gc <- getGenomeGC()
 #' }
 #' @export

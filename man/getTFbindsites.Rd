@@ -16,7 +16,7 @@ A \code{GRangesList}, one element per motif.
 Retrieve transcription factor binding sites for a motif set. Downloaded from AnnotationHub on first use and cached locally thereafter.
 }
 \examples{
-\donttest{
+\dontrun{
 x <- getTFbindsites()
 }
 }

@@ -3,7 +3,7 @@
 #' @param motifSet Motif set to load. One of: altius, cisbpv2, jaspar2020, jaspar2020_distal.
 #' @return A named \code{list} of five-row matrices, one per motif.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' x <- getGCfreq()
 #' }
 #' @export

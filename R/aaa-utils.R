@@ -1,3 +1,5 @@
+#' @noRd
+.local_dir <- function() { ... }
 .PKG_NAME <- "methylTFRAnnotationHg38"
 .MOTIF_SETS <- c("altius", "cisbpv2", "jaspar2020", "jaspar2020_distal")
 .ASSEMBLY <- "hg38"
@@ -12,6 +14,7 @@
 }
 
 #' @keywords internal
+#' @noRd
 #' @description Resolve one annotation resource by file name.
 #' Reads from a local directory when one is configured, otherwise
 #' from AnnotationHub. The local path exists so the package can be
@@ -44,6 +47,7 @@
 }
 
 #' @keywords internal
+#' @noRd
 .check_motif_set <- function(motifSet) {
     motifSet <- tolower(motifSet)
     if (length(motifSet) != 1 || !motifSet %in% .MOTIF_SETS) {

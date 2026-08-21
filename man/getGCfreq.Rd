@@ -16,7 +16,7 @@ A named \code{list} of five-row matrices, one per motif.
 Load the motif GC frequency table for a motif set. Downloaded from AnnotationHub on first use and cached locally thereafter.
 }
 \examples{
-\donttest{
+\dontrun{
 x <- getGCfreq()
 }
 }
