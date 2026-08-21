@@ -55,7 +55,7 @@ saveRDS(mock_gr, file.path(mock_dir, "genomewide_GC_hg38.rds"))
 
 # Temporarily point the package to tempdir
 old_opt <- getOption("methylTFRAnnotationHg38.datadir")
-options(methylTFRAnnotationHg38.datadir = mock_dir)```
+options(methylTFRAnnotationHg38.datadir = mock_dir)
 ```
 
 # Usage
