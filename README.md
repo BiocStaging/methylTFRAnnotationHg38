@@ -1,5 +1,9 @@
 # methylTFRAnnotationHg38
+<!-- badges: start -->
 [![Test R-universe](https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38/actions/workflows/r-universe-test.yml/badge.svg)](https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38/actions/workflows/r-universe.yml)
+[![GitHub issues](https://img.shields.io/github/issues/EpigenomeInformatics/methylTFRAnnotationHg38)](https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38/issues)
+[![GitHub pulls](https://img.shields.io/github/issues-pr/EpigenomeInformatics/methylTFRAnnotationHg38)](https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38/pulls)
+<!-- badges: end -->
 
 `methylTFRAnnotationHg38` provides the genome annotations `methylTFR` needs to compute bias-corrected transcription factor deviation scores on hg38. 
 
