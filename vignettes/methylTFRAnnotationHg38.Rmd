@@ -1,0 +1,60 @@
+---
+title: "methylTFRAnnotationHg38"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{methylTFRAnnotationHg38}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Overview
+
+`methylTFRAnnotationHg38` provides the genome annotations `methylTFR` needs to
+compute bias-corrected transcription factor deviation scores on hg38:
+
+- **binding sites**, one `GRanges` per motif, each range extended
+  so that methylation can be read across the footprint window;
+- **motif GC frequency tables**, recording how each motif's binding
+  sites distribute across genome-wide GC quintiles;
+- **the genome-wide GC distribution**, which assigns each
+  methylation call to a GC bin.
+
+The GC tables are what make the deviation score bias-corrected. A
+motif whose binding sites sit in GC-rich sequence will overlap CpG
+islands more often than one that does not, and CpG islands are
+hypomethylated; without the correction that difference in sequence
+composition would read as a difference in factor activity.
+
+The data are too large to ship inside the package, so they are
+hosted on AnnotationHub and downloaded on first use. Subsequent
+calls are served from the local AnnotationHub cache.
+
+# Usage
+
+```{r, eval = FALSE}
+library(methylTFRAnnotationHg38)
+
+tf_bindsites <- getTFbindsites("altius")
+gcfreqs      <- getGCfreq("altius")
+gc_dist      <- getGenomeGC()
+```
+
+These are passed straight to `methylTFR::run_methyltfr()`.
+
+# Available motif sets
+
+```{r, eval = FALSE}
+methylTFRAnnotationHg38:::.MOTIF_SETS
+```
+
+Sets ending in `_distal` provide GC frequency tables computed over distal regulatory regions only. They share the unrestricted binding sites, so pass the base set name to `getTFbindsites()` and the `_distal` name to `getGCfreq()`.
+
+# Session info
+
+```{r}
+sessionInfo()
+```

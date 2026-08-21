@@ -1,0 +1,21 @@
+Package: methylTFRAnnotationHg38
+Title: methylTFR Annotations for Hg38
+Description: Precomputed transcription factor binding sites, motif GC
+    frequency tables and a genome-wide GC distribution for use with the
+    methylTFR package. The data are hosted on AnnotationHub and
+    retrieved on first use; this package provides the accessors and the
+    documentation.
+Author: Irem B. Gunduz [aut, cre]
+Maintainer: Irem B. Gunduz <irembgunduz@gmail.com>
+Date: 2026-08-21
+License: Artistic-2.0
+Encoding: UTF-8
+Version: 0.99.0
+Depends: R (>= 4.3.0)
+Imports: AnnotationHub, GenomicRanges, utils
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0), BiocStyle
+VignetteBuilder: knitr
+biocViews: AnnotationHub, AnnotationData, Genome, Homo_sapiens,
+    FunctionalAnnotation
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
