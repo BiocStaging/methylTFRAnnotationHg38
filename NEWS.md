@@ -1,4 +1,4 @@
-# methylTFRAnnotationHg38 0.99.3
+# methylTFRAnnotationHg38 0.99.4
 
 * Initial submission to Bioconductor.
 
@@ -13,3 +13,5 @@
   into five genome-wide GC quintiles. Bin boundaries are recorded with
   the object so that the motif frequency tables and the genome table
   are always binned on the same scale.
+
+* Fixes on NOTES from biocchecks

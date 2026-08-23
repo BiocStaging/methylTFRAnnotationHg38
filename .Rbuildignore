@@ -1,0 +1,15 @@
+^LICENSE\.md$
+^README\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^doc$
+^Meta$
+(^|/)\._
+(^|/)\.DS_Store$
+^\.Rhistory$
+^\.RData$
+^\.Ruserdata$
+^\.Rproj\.user$
+^\.github

@@ -39,7 +39,7 @@ mock_dir <- tempdir()
 
 # 1. Mock TF bindsites
 mock_grl <- GenomicRanges::GRangesList(
-  mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
+    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
 )
 saveRDS(mock_grl, file.path(mock_dir, "altius_tf_bindsites.rds"))
 
@@ -76,9 +76,9 @@ These are passed straight to `methylTFR::run_methyltfr()`.
 methylTFRAnnotationHg38:::.MOTIF_SETS
 ```
 
-Sets ending in `_distal` provide GC frequency tables computed over distal regulatory regions only.
-They share the unrestricted binding sites, so pass the base set name to `getTFbindsites()` and 
-the `_distal` name to `getGCfreq()`.
+Sets ending in `_distal` provide GC frequency tables computed over distal regulatory regions only. 
+They share the unrestricted binding sites, so pass the base set name to `getTFbindsites()` 
+and the `_distal` name to `getGCfreq()`.
 
 # Session info
 
