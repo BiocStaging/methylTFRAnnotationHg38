@@ -16,7 +16,7 @@ A named \code{list} of five-row matrices, one per motif.
 Load the motif GC frequency table for a motif set. Downloaded from AnnotationHub on first use and cached locally thereafter.
 }
 \examples{
-# 1. Create a dummy object and save it to a temporary directory 
+# 1. Create a dummy object and save it to a temporary directory
 # to bypass AnnotationHub during package checks.
 mock_dir <- tempdir()
 mock_file <- file.path(mock_dir, "altius_motif_gcfreq.rds")

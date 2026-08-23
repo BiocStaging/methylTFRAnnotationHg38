@@ -39,7 +39,7 @@ mock_dir <- tempdir()
 
 # 1. Mock TF bindsites
 mock_grl <- GenomicRanges::GRangesList(
-    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
+  mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
 )
 saveRDS(mock_grl, file.path(mock_dir, "altius_tf_bindsites.rds"))
 
@@ -64,8 +64,8 @@ options(methylTFRAnnotationHg38.datadir = mock_dir)
 library(methylTFRAnnotationHg38)
 
 tf_bindsites <- getTFbindsites("altius")
-gcfreqs      <- getGCfreq("altius")
-gc_dist      <- getGenomeGC()
+gcfreqs <- getGCfreq("altius")
+gc_dist <- getGenomeGC()
 ```
 
 These are passed straight to `methylTFR::run_methyltfr()`.
