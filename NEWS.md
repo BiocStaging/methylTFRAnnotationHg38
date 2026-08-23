@@ -1,4 +1,4 @@
-# methylTFRAnnotationHg38 0.99.0
+# methylTFRAnnotationHg38 0.99.3
 
 * Initial submission to Bioconductor.
 

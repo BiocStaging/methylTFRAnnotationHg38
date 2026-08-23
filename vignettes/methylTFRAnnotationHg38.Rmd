@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -17,11 +17,11 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 compute bias-corrected transcription factor deviation scores on hg38:
 
 - **binding sites**, one `GRanges` per motif, each range extended
-  so that methylation can be read across the footprint window;
+    so that methylation can be read across the footprint window;
 - **motif GC frequency tables**, recording how each motif's binding
-  sites distribute across genome-wide GC quintiles;
+    sites distribute across genome-wide GC quintiles;
 - **the genome-wide GC distribution**, which assigns each
-  methylation call to a GC bin.
+    methylation call to a GC bin.
 
 The GC tables are what make the deviation score bias-corrected. A
 motif whose binding sites sit in GC-rich sequence will overlap CpG
@@ -60,7 +60,7 @@ options(methylTFRAnnotationHg38.datadir = mock_dir)
 
 # Usage
 
-```{r}
+```{r usage}
 library(methylTFRAnnotationHg38)
 
 tf_bindsites <- getTFbindsites("altius")
@@ -72,15 +72,17 @@ These are passed straight to `methylTFR::run_methyltfr()`.
 
 # Available motif sets
 
-```{r, eval = FALSE}
+```{r available_motifs, eval = FALSE}
 methylTFRAnnotationHg38:::.MOTIF_SETS
 ```
 
-Sets ending in `_distal` provide GC frequency tables computed over distal regulatory regions only. They share the unrestricted binding sites, so pass the base set name to `getTFbindsites()` and the `_distal` name to `getGCfreq()`.
+Sets ending in `_distal` provide GC frequency tables computed over distal regulatory regions only.
+They share the unrestricted binding sites, so pass the base set name to `getTFbindsites()` and 
+the `_distal` name to `getGCfreq()`.
 
 # Session info
 
-```{r}
+```{r session_info}
 sessionInfo()
 ```
 

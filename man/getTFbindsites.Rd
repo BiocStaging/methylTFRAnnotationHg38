@@ -7,13 +7,15 @@
 getTFbindsites(motifSet = "altius")
 }
 \arguments{
-\item{motifSet}{Motif set to load. One of: altius, cisbpv2, jaspar2020, jaspar2020_distal.}
+\item{motifSet}{Motif set to load. One of: altius, cisbpv2, jaspar2020,
+jaspar2020_distal.}
 }
 \value{
 A \code{GRangesList}, one element per motif.
 }
 \description{
-Retrieve transcription factor binding sites for a motif set. Downloaded from AnnotationHub on first use and cached locally thereafter.
+Retrieve transcription factor binding sites for a motif set.
+Downloaded from AnnotationHub on first use and cached locally thereafter.
 }
 \examples{
 # 1. Create a dummy object and save it to a temp directory

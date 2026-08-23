@@ -1,7 +1,3 @@
-#' @noRd
-.local_dir <- function() {
-  ...
-}
 .PKG_NAME <- "methylTFRAnnotationHg38"
 .MOTIF_SETS <- c("altius", "cisbpv2", "jaspar2020", "jaspar2020_distal")
 .ASSEMBLY <- "hg38"

@@ -1,6 +1,8 @@
 #' @title getGCfreq
-#' @description Load the motif GC frequency table for a motif set. Downloaded from AnnotationHub on first use and cached locally thereafter.
-#' @param motifSet Motif set to load. One of: altius, cisbpv2, jaspar2020, jaspar2020_distal.
+#' @description Load the motif GC frequency table for a motif set.
+#' Downloaded from AnnotationHub on first use and cached locally thereafter.
+#' @param motifSet Motif set to load. One of: altius, cisbpv2, jaspar2020,
+#' jaspar2020_distal.
 #' @return A named \code{list} of five-row matrices, one per motif.
 #' @examples
 #' # 1. Create a dummy object and save it to a temporary directory
