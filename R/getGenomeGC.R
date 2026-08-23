@@ -31,6 +31,6 @@
 #'
 #' @export
 getGenomeGC <- function(assembly = .ASSEMBLY) {
-  assembly <- tolower(assembly)
-  .resolve_resource(paste0("genomewide_GC_", assembly, ".rds"))
+    assembly <- tolower(assembly)
+    .resolve_resource(paste0("genomewide_GC_", assembly, ".rds"))
 }

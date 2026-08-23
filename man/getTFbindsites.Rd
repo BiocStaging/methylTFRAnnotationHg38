@@ -24,7 +24,7 @@ mock_file <- file.path(mock_dir, "altius_tf_bindsites.rds")
 
 # Mocking a GRangesList as expected by the function output
 mock_grl <- GenomicRanges::GRangesList(
-  mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
+    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
 )
 saveRDS(mock_grl, mock_file)
 

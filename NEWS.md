@@ -1,4 +1,4 @@
-# methylTFRAnnotationHg38 0.99.4
+# methylTFRAnnotationHg38 0.99.5
 
 * Initial submission to Bioconductor.
 
@@ -15,3 +15,5 @@
   are always binned on the same scale.
 
 * Fixes on NOTES from biocchecks
+
+* Added 4 spaces as suggested

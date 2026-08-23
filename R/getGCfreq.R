@@ -27,6 +27,6 @@
 #'
 #' @export
 getGCfreq <- function(motifSet = "altius") {
-  motifSet <- .check_motif_set(motifSet)
-  .resolve_resource(paste0(motifSet, "_motif_gcfreq.rds"))
+    motifSet <- .check_motif_set(motifSet)
+    .resolve_resource(paste0(motifSet, "_motif_gcfreq.rds"))
 }
