@@ -7,7 +7,7 @@ tax_id          <- 9606
 coord_1_based   <- TRUE
 maintainer      <- "Irem B. Gunduz <irembgunduz@gmail.com>"
 dispatch_class  <- "Rds"
-location_prefix <- "https://bioconductorhubs.blob.core.windows.net/annotationhub/"
+location_prefix <- "https://zenodo.org/"
 
 # 2. Build the data frame
 metadata <- data.frame(
@@ -21,7 +21,7 @@ metadata <- data.frame(
     "jaspar2020_motif_gcfreq.rds",
     "jaspar2020_tf_bindsites.rds"
   ),
-  
+
   Description = c(
     "GC bin frequency tables for ALTIUS motifs on hg38. One five-row matrix per motif giving the number of binding sites falling in each genome-wide GC quintile, used by methylTFR to compute the expected methylation a motif would show from GC content alone.",
     "Genome-wide ALTIUS transcription factor binding site predictions for hg38, one GRanges per motif, each range extended by 200 bases on either side of the motif match so that methylTFR can read methylation across the footprint window.",
@@ -32,11 +32,11 @@ metadata <- data.frame(
     "GC bin frequency tables for JASPAR2020 motifs on hg38. One five-row matrix per motif giving the number of binding sites falling in each genome-wide GC quintile, used by methylTFR to compute the expected methylation a motif would show from GC content alone.",
     "Genome-wide JASPAR2020 transcription factor binding site predictions for hg38, one GRanges per motif, each range extended by 200 bases on either side of the motif match so that methylTFR can read methylation across the footprint window."
   ),
-  
+
   BiocVersion = rep(bioc_version, 8),
   Genome = rep(genome, 8),
   SourceType = rep(source_type, 8),
-  
+
   SourceUrl = c(
     "https://resources.altius.org/~jvierstra/projects/motif-clustering/releases/v1.0/",
     "https://resources.altius.org/~jvierstra/projects/motif-clustering/releases/v1.0/",
@@ -47,7 +47,7 @@ metadata <- data.frame(
     "https://jaspar.elixir.no/",
     "https://jaspar.elixir.no/"
   ),
-  
+
   SourceVersion = c(
     "Vierstra motif archetypes v1.0",
     "Vierstra motif archetypes v1.0",
@@ -58,11 +58,11 @@ metadata <- data.frame(
     "JASPAR2020 CORE",
     "JASPAR2020 CORE"
   ),
-  
+
   Species = rep(species, 8),
   TaxonomyId = rep(tax_id, 8),
   Coordinate_1_based = rep(coord_1_based, 8),
-  
+
   DataProvider = c(
     "Altius Institute",
     "Altius Institute",
@@ -73,9 +73,9 @@ metadata <- data.frame(
     "JASPAR",
     "JASPAR"
   ),
-  
+
   Maintainer = rep(maintainer, 8),
-  
+
   RDataClass = c(
     "list",
     "GRangesList",
@@ -86,21 +86,21 @@ metadata <- data.frame(
     "list",
     "GRangesList"
   ),
-  
+
   DispatchClass = rep(dispatch_class, 8),
   Location_Prefix = rep(location_prefix, 8),
-  
+
   RDataPath = c(
-    "methylTFRAnnotationHg38/altius_motif_gcfreq.rds",
-    "methylTFRAnnotationHg38/altius_tf_bindsites.rds",
-    "methylTFRAnnotationHg38/cisbpv2_motif_gcfreq.rds",
-    "methylTFRAnnotationHg38/cisbpv2_tf_bindsites.rds",
-    "methylTFRAnnotationHg38/genomewide_GC_hg38.rds",
-    "methylTFRAnnotationHg38/jaspar2020_distal_motif_gcfreq.rds",
-    "methylTFRAnnotationHg38/jaspar2020_motif_gcfreq.rds",
-    "methylTFRAnnotationHg38/jaspar2020_tf_bindsites.rds"
+    "records/22206980/files/altius_motif_gcfreq.rds",
+    "records/22206980/files/altius_tf_bindsites.rds",
+    "records/22206980/files/cisbpv2_motif_gcfreq.rds",
+    "records/22206980/files/cisbpv2_tf_bindsites.rds",
+    "records/22206980/files/genomewide_GC_hg38.rds",
+    "records/22206980/files/jaspar2020_distal_motif_gcfreq.rds",
+    "records/22206980/files/jaspar2020_motif_gcfreq.rds",
+    "records/22206980/files/jaspar2020_tf_bindsites.rds"
   ),
-  
+
   Tags = c(
     "methylTFRAnnotationHg38:GCcontent:MotifAnnotation:ALTIUS",
     "methylTFRAnnotationHg38:TFBS:MotifAnnotation:ALTIUS",
@@ -111,7 +111,7 @@ metadata <- data.frame(
     "methylTFRAnnotationHg38:GCcontent:MotifAnnotation:JASPAR2020",
     "methylTFRAnnotationHg38:TFBS:MotifAnnotation:JASPAR2020"
   ),
-  
+
   stringsAsFactors = FALSE
 )
 
@@ -120,9 +120,9 @@ metadata <- data.frame(
 dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
 
 write.csv(
-  x = metadata, 
-  file = "inst/extdata/metadata.csv", 
-  row.names = FALSE, 
+  x = metadata,
+  file = "inst/extdata/metadata.csv",
+  row.names = FALSE,
   quote = TRUE  # This ensures strings containing spaces/commas are properly enclosed
 )
 
@@ -130,6 +130,6 @@ write.csv(
 if (!requireNamespace("AnnotationHubData", quietly = TRUE)) {
     message("Please install AnnotationHubData to validate your metadata.csv")
 } else {
-    AnnotationHubData::makeAnnotationHubMetadata("inst/extdata")
+    AnnotationHubData::makeAnnotationHubMetadata(".")
     message("Metadata validation completed successfully!")
 }
