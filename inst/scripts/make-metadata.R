@@ -1,5 +1,5 @@
 # 1. Define the shared (constant) variables for cleaner code
-bioc_version    <- "3.23"
+bioc_version    <- "3.24"
 genome          <- "hg38"
 source_type     <- "RDS"
 species         <- "Homo sapiens"
