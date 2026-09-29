@@ -9,10 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-```
-
 # Overview
 
 `methylTFRAnnotationHg38` provides the genome annotations that
