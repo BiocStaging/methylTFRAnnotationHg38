@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use methylTFRAnnotationHg38, please cite it as below."
+type: software
+title: "methylTFRAnnotationHg38: methylTFR annotations for hg38"
+abstract: >-
+  Precomputed transcription factor binding sites, motif GC frequency tables
+  and a genome-wide GC distribution for the human (hg38) genome, for use with the
+  methylTFR package. The data are hosted on AnnotationHub and retrieved on
+  first use.
+authors:
+  - family-names: Gunduz
+    given-names: Irem B.
+    email: irembgunduz@gmail.com
+    orcid: "https://orcid.org/0000-0003-2641-0916"
+  - family-names: Mueller
+    given-names: Fabian
+    orcid: "https://orcid.org/0000-0001-5809-2321"
+version: 0.99.9
+date-released: "2026-09-29"
+doi: 10.18129/B9.bioc.methylTFRAnnotationHg38
+license: Artistic-2.0
+repository-code: "https://github.com/EpigenomeInformatics/methylTFRAnnotationHg38"
+keywords:
+  - R
+  - Bioconductor
+  - AnnotationHub
+  - DNA methylation
+  - transcription factor binding sites
+references:
+  - type: software
+    title: "methylTFR: Quantification of DNA methylation signatures in TFBS"
+    authors:
+      - family-names: Gunduz
+        given-names: Irem B.
+      - family-names: Murugan
+        given-names: Sarath Kumar
+      - family-names: Mueller
+        given-names: Fabian
+    doi: 10.18129/B9.bioc.methylTFR
+    repository-code: "https://github.com/EpigenomeInformatics/methylTFR"
