@@ -3,12 +3,31 @@
 .ASSEMBLY <- "hg38"
 
 #' @keywords internal
+#' @noRd
 .local_dir <- function() {
     d <- getOption(
         "methylTFRAnnotationHg38.datadir",
         Sys.getenv("METHYL_TFRANNOTATION_HG38_DIR", "")
     )
-    if (nzchar(d)) d else NULL
+    if (is.character(d) && length(d) == 1L && nzchar(d)) d else NULL
+}
+
+#' @keywords internal
+#' @noRd
+#' @description AnnotationHub records belonging to this package, as a
+#' character vector of titles named by AnnotationHub ID. Kept separate
+#' from .resolve_resource() so the lookup logic can be unit-tested
+#' without network access.
+.hub_titles <- function() {
+    hub <- AnnotationHub::AnnotationHub()
+    hits <- AnnotationHub::query(hub, .PKG_NAME)
+    stats::setNames(hits$title, names(hits))
+}
+
+#' @keywords internal
+#' @noRd
+.hub_get <- function(id) {
+    AnnotationHub::AnnotationHub()[[id]]
 }
 
 #' @keywords internal
@@ -32,27 +51,40 @@
         }
         return(readRDS(path))
     }
-    hub <- AnnotationHub::AnnotationHub()
-    hits <- AnnotationHub::query(hub, .PKG_NAME)
-    idx <- match(file, hits$title)
+    titles <- .hub_titles()
+    idx <- match(file, titles)
     if (is.na(idx)) {
         stop(
             "Resource not found on AnnotationHub: ", file,
-            "\nAvailable: ", paste(hits$title, collapse = ", ")
+            "\nAvailable: ", paste(titles, collapse = ", ")
         )
     }
-    hits[[names(hits)[idx]]]
+    .hub_get(names(titles)[idx])
 }
 
 #' @keywords internal
 #' @noRd
 .check_motif_set <- function(motifSet) {
-    motifSet <- tolower(motifSet)
-    if (length(motifSet) != 1 || !motifSet %in% .MOTIF_SETS) {
+    if (!is.character(motifSet) || length(motifSet) != 1L ||
+        is.na(motifSet) || !tolower(motifSet) %in% .MOTIF_SETS) {
         stop(
             "Invalid motif set. Available: ",
             paste(.MOTIF_SETS, collapse = ", ")
         )
     }
-    motifSet
+    tolower(motifSet)
+}
+
+#' @title List the motif sets provided by this package
+#' @description Returns the names accepted by the \code{motifSet}
+#' argument of \code{\link{getTFbindsites}} and
+#' \code{\link{getGCfreq}}.
+#' @return A character vector of motif set names.
+#' @seealso \code{\link{methylTFRAnnotationHg38}} for an overview of the
+#' package.
+#' @examples
+#' availableMotifSets()
+#' @export
+availableMotifSets <- function() {
+    .MOTIF_SETS
 }

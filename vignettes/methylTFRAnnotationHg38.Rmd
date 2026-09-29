@@ -1,5 +1,7 @@
 ---
 title: "methylTFRAnnotationHg38"
+author: "Irem B. Gunduz"
+date: "`r Sys.Date()`"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{methylTFRAnnotationHg38}
@@ -13,81 +15,228 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 # Overview
 
-`methylTFRAnnotationHg38` provides the genome annotations `methylTFR` needs to
-compute bias-corrected transcription factor deviation scores on hg38:
+`methylTFRAnnotationHg38` provides the genome annotations that
+[methylTFR](https://github.com/EpigenomeInformatics/methylTFR) needs to
+compute GC-bias-corrected transcription factor (TF) deviation scores on
+hg38. It contains three kinds of resources, each with its own accessor:
 
-- **binding sites**, one `GRanges` per motif, each range extended
-    so that methylation can be read across the footprint window;
-- **motif GC frequency tables**, recording how each motif's binding
-    sites distribute across genome-wide GC quintiles;
-- **the genome-wide GC distribution**, which assigns each
-    methylation call to a GC bin.
+| Accessor | Returns | Help page |
+|---|---|---|
+| `getTFbindsites()` | TF binding sites, one `GRanges` per motif | `?tf_bindsites` |
+| `getGCfreq()` | motif GC frequency tables, one matrix per motif | `?motif_gcfreq` |
+| `getGenomeGC()` | genome-wide GC content in 30 nt windows | `?genomewide_GC` |
 
-The GC tables are what make the deviation score bias-corrected. A
-motif whose binding sites sit in GC-rich sequence will overlap CpG
-islands more often than one that does not, and CpG islands are
-hypomethylated; without the correction that difference in sequence
-composition would read as a difference in factor activity.
+The GC tables are what make the deviation score bias-corrected. A motif
+whose binding sites sit in GC-rich sequence overlaps CpG islands more
+often than one that does not, and CpG islands are hypomethylated. Without
+a correction, that difference in sequence composition would look like a
+difference in TF activity.
 
-The data are too large to ship inside the package, so they are
-hosted on AnnotationHub and downloaded on first use. Subsequent
-calls are served from the local AnnotationHub cache.
+The resources are several gigabytes in total, so they are hosted on
+AnnotationHub instead of being shipped with the package. The first call
+to an accessor downloads the resource; later calls read it from the local
+AnnotationHub cache.
 
-```{r dummy, include = FALSE}
-# HIDDEN CHUNK: Set up mock data so the vignette chunks can evaluate
-mock_dir <- tempdir()
+# Installation
 
-# 1. Mock TF bindsites
-mock_grl <- GenomicRanges::GRangesList(
-    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
-)
-saveRDS(mock_grl, file.path(mock_dir, "altius_tf_bindsites.rds"))
-
-# 2. Mock GC frequencies
-mock_gcfreq <- list(mock_motif_1 = matrix(0.25, nrow = 5, ncol = 4))
-saveRDS(mock_gcfreq, file.path(mock_dir, "altius_motif_gcfreq.rds"))
-
-# 3. Mock Genome GC
-mock_gr <- GenomicRanges::GRanges("chr1:1-100")
-mock_gr$GC_bias <- 0.5
-mock_gr$GC_bin <- 1L
-saveRDS(mock_gr, file.path(mock_dir, "genomewide_GC_hg38.rds"))
-
-# Temporarily point the package to tempdir
-old_opt <- getOption("methylTFRAnnotationHg38.datadir")
-options(methylTFRAnnotationHg38.datadir = mock_dir)
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+BiocManager::install("methylTFRAnnotationHg38")
 ```
 
-# Usage
+# Example data used in this vignette
 
-```{r usage}
+Downloading the real resources would take too long for a vignette, so
+this vignette works on small synthetic objects that have exactly the
+structure of the real ones. Every accessor can read `.rds` files from a
+local directory instead of AnnotationHub when the option
+`methylTFRAnnotationHg38.datadir` is set. We write the synthetic objects to a
+temporary directory and point the option at it. With the option unset
+(the default), the same calls below would download the real data.
+
+```{r mock-data}
+suppressPackageStartupMessages(library(GenomicRanges))
 library(methylTFRAnnotationHg38)
 
-tf_bindsites <- getTFbindsites("altius")
-gcfreqs <- getGCfreq("altius")
-gc_dist <- getGenomeGC()
-```
+mock_dir <- file.path(tempdir(), "methylTFRAnnotationHg38_vignette")
+dir.create(mock_dir, showWarnings = FALSE)
 
-These are passed straight to `methylTFR::run_methyltfr()`.
+# Binding sites: a GRangesList with one GRanges per motif. Each range is
+# a motif match extended by 200 bp on either side.
+mock_tfbs <- GRangesList(
+    MA0001.1 = GRanges(
+        c("chr1:10001-10411", "chr1:52001-52411", "chr2:3001-3411"),
+        strand = c("+", "-", "+")
+    ),
+    MA0002.1 = GRanges(c("chr1:20001-20415", "chr3:8001-8415"),
+        strand = c("-", "+")
+    )
+)
+saveRDS(mock_tfbs, file.path(mock_dir, "altius_tf_bindsites.rds"))
+
+# GC frequency tables: one 5-row matrix per motif. Rows are GC
+# quintiles, columns are positions of a 30 nt window along the binding
+# site, and every column sums to 1. We use 6 positions to keep it short.
+set.seed(1)
+mock_freq <- function(n_pos) {
+    m <- matrix(runif(5 * n_pos), nrow = 5)
+    sweep(m, 2, colSums(m), "/")
+}
+mock_gcfreq <- list(MA0001.1 = mock_freq(6), MA0002.1 = mock_freq(6))
+saveRDS(mock_gcfreq, file.path(mock_dir, "altius_motif_gcfreq.rds"))
+
+# Genome-wide GC: non-overlapping 30 nt windows with their GC fraction
+# and GC quintile (1 = lowest, 5 = highest).
+mock_gc <- GRanges("chr1", IRanges(start = seq(1, by = 30, length.out = 10),
+    width = 30))
+mock_gc$GC_bias <- round(runif(10, 0.2, 0.7), 2)
+breaks <- quantile(mock_gc$GC_bias, probs = seq(0, 1, 0.2))
+mock_gc$GC_bin <- findInterval(mock_gc$GC_bias, breaks,
+    rightmost.closed = TRUE)
+metadata(mock_gc) <- list(gc_breaks = breaks, bin_scope = "genome",
+    step = 30L)
+saveRDS(mock_gc, file.path(mock_dir, "genomewide_GC_hg38.rds"))
+
+old_opt <- options(methylTFRAnnotationHg38.datadir = mock_dir)
+list.files(mock_dir)
+```
 
 # Available motif sets
 
-```{r available_motifs, eval = FALSE}
-methylTFRAnnotationHg38:::.MOTIF_SETS
+`availableMotifSets()` lists the motif sets that can be passed to
+`getTFbindsites()` and `getGCfreq()`:
+
+```{r motif-sets}
+availableMotifSets()
 ```
 
-Sets ending in `_distal` provide GC frequency tables computed
-over distal regulatory regions only. They share the unrestricted
-binding sites, so pass the base set name to `getTFbindsites()` 
-and the `_distal` name to `getGCfreq()`.
+Sets ending in `_distal` only provide a GC frequency table, computed
+from the binding sites that overlap distal regulatory regions. They
+share the binding sites of their base set. `getTFbindsites()` accepts the
+`_distal` name and returns the base set's binding sites, so the same
+name can be used for both accessors:
+
+```{r distal}
+file.copy(file.path(mock_dir, "altius_motif_gcfreq.rds"),
+    file.path(mock_dir, "jaspar2020_distal_motif_gcfreq.rds"))
+file.copy(file.path(mock_dir, "altius_tf_bindsites.rds"),
+    file.path(mock_dir, "jaspar2020_tf_bindsites.rds"))
+distal_freq <- getGCfreq("jaspar2020_distal")
+distal_sites <- getTFbindsites("jaspar2020_distal") # jaspar2020 sites
+names(distal_sites)
+```
+
+# Binding sites: `getTFbindsites()`
+
+`getTFbindsites()` returns a `GRangesList` named by motif ID, with one
+`GRanges` of binding sites per motif. Each range covers the motif match
+plus 200 bp on either side: the footprint window over which methylTFR
+reads methylation. All ranges of a motif therefore have the same width.
+
+```{r tfbs}
+tf_bindsites <- getTFbindsites("altius")
+tf_bindsites
+```
+
+The number of binding sites per motif, and the width of each motif's
+window:
+
+```{r tfbs-summary}
+lengths(tf_bindsites)
+vapply(width(tf_bindsites), unique, integer(1))
+```
+
+# GC frequency tables: `getGCfreq()`
+
+`getGCfreq()` returns a named list with one matrix per motif, using the
+same motif IDs as `getTFbindsites()`. Each matrix has five rows, one per
+genome-wide GC quintile (row 1 lowest GC, row 5 highest). Each column is
+one position of a 30 nt window sliding along the binding site. An entry
+is the fraction of the motif's binding sites whose window at that
+position falls into that GC quintile, so every column sums to one. In the
+real data a matrix has several hundred columns.
+
+```{r gcfreq}
+gcfreqs <- getGCfreq("altius")
+names(gcfreqs)
+dim(gcfreqs$MA0001.1)
+round(gcfreqs$MA0001.1, 2)
+colSums(gcfreqs$MA0001.1)
+```
+
+methylTFR combines these fractions with the average methylation it
+observes in each GC quintile to get the methylation a motif would show
+from GC content alone, and reports the deviation from that expectation.
+
+# Genome-wide GC distribution: `getGenomeGC()`
+
+`getGenomeGC()` returns a `GRanges` of non-overlapping 30 nt windows.
+`GC_bias` is the GC fraction of each window and `GC_bin` its genome-wide
+GC quintile. methylTFR overlaps each methylation call with these windows
+to assign it to a GC bin. The package serves a single assembly, so no
+argument is needed; `getGenomeGC("hg38")` is accepted too.
+
+```{r genome-gc}
+gc_dist <- getGenomeGC()
+gc_dist
+table(gc_dist$GC_bin)
+```
+
+The quintile boundaries are stored with the object, so that the genome
+table and the motif tables always use the same scale:
+
+```{r genome-gc-breaks}
+metadata(gc_dist)$gc_breaks
+```
+
+# Using the annotations with methylTFR
+
+The three objects are passed to `methylTFR::run_methyltfr()`. With real
+data this looks like:
+
+```r
+library(methylTFR)
+deviations <- run_methyltfr(
+    "samples.tsv",               # sample annotation
+    "samples_dir",               # directory with methylation calls
+    tf_bindsites = getTFbindsites("jaspar2020"),
+    gcfreqs      = getGCfreq("jaspar2020"),
+    gc_dist      = getGenomeGC(),
+    filetype     = "EPP"
+)
+```
+
+See the methylTFR vignettes for a complete analysis.
+
+# Reading the real data from AnnotationHub
+
+Once the local-directory option is removed, the accessors go to
+AnnotationHub. The records can also be browsed directly:
+
+```r
+library(AnnotationHub)
+ah <- AnnotationHub()
+query(ah, "methylTFRAnnotationHg38")
+```
+
+If you have downloaded the `.rds` files by hand, set
+`options(methylTFRAnnotationHg38.datadir = "/path/to/files")` (or the
+environment variable `METHYL_TFRANNOTATION_HG38_DIR`) to read them from disk.
+
+# Cleaning up
+
+Restore the option and remove the synthetic files:
+
+```{r cleanup}
+options(old_opt)
+unlink(mock_dir, recursive = TRUE)
+getOption("methylTFRAnnotationHg38.datadir")
+```
 
 # Session info
 
-```{r session_info}
+```{r session-info}
 sessionInfo()
-```
-
-```{r cleanup, include = FALSE}
-# HIDDEN CHUNK: Clean up the options
-options(methylTFRAnnotationHg38.datadir = old_opt)
 ```

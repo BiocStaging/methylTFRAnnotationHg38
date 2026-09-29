@@ -1,3 +1,35 @@
+# methylTFRAnnotationHg38 0.99.9
+
+Changes in response to the Bioconductor review:
+
+* `Authors@R` lists the funders (ERA-NET Transcan-Neu III - EPILUNAR,
+  grant 01KT2409; Saarland University NanoBioMed Young Investigator
+  Grant) with the `fnd` role.
+
+* New package help page `?methylTFRAnnotationHg38` summarising the resources and
+  linking the accessors.
+
+* New help pages describing the structure of each AnnotationHub resource
+  listed in `inst/extdata/metadata.csv`: `?motif_gcfreq`
+  (`?altius_motif_gcfreq`, ...), `?tf_bindsites`
+  (`?altius_tf_bindsites`, ...) and `?genomewide_GC`
+  (`?genomewide_GC_hg38`).
+
+* New exported `availableMotifSets()` listing the accepted motif sets.
+
+* `getGenomeGC()` accepts `"hg38"` (or no argument) and gives an
+  informative error for any other assembly.
+
+* `getTFbindsites()` accepts `_distal` set names and returns the
+  binding sites of the base set.
+
+* Unit tests now cover the local-directory and AnnotationHub code paths
+  (the hub is mocked, so the tests run offline).
+
+* The vignette no longer hides code: the synthetic example data are
+  built in a visible chunk, every chunk is evaluated, and each accessor's
+  output is printed and explained.
+
 # methylTFRAnnotationHg38 0.99.8
 
 * Initial submission to Bioconductor.

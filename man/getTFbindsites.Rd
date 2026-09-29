@@ -2,41 +2,53 @@
 % Please edit documentation in R/getTFbindsites.R
 \name{getTFbindsites}
 \alias{getTFbindsites}
-\title{getTFbindsites}
+\title{Load transcription factor binding sites}
 \usage{
 getTFbindsites(motifSet = "altius")
 }
 \arguments{
-\item{motifSet}{Motif set to load. One of: altius, cisbpv2, jaspar2020,
-jaspar2020_distal.}
+\item{motifSet}{Motif set to load. One of
+\code{availableMotifSets()}: \code{altius}, \code{cisbpv2},
+\code{jaspar2020}, \code{jaspar2020_distal}. Case-insensitive.}
 }
 \value{
-A \code{GRangesList}, one element per motif.
+A \code{GRangesList} with one \code{GRanges} per motif,
+named by motif ID.
 }
 \description{
-Retrieve transcription factor binding sites for a motif set.
-Downloaded from AnnotationHub on first use and cached locally thereafter.
+Load genome-wide transcription factor binding sites for a
+motif set. Downloaded from AnnotationHub on first use and cached
+locally thereafter.
+}
+\details{
+Each element of the returned list holds the binding sites of
+one motif. Every range is the motif match extended by 200 bp on either
+side, the footprint window across which \pkg{methylTFR} reads
+methylation. See \code{\link{tf_bindsites}} for the data format.
+
+Sets ending in \code{_distal} only have their own GC frequency
+table; they share the binding sites of the base set. Passing a
+\code{_distal} name here returns the base set's binding sites.
 }
 \examples{
-# 1. Create a dummy object and save it to a temp directory
-mock_dir <- tempdir()
-mock_file <- file.path(mock_dir, "altius_tf_bindsites.rds")
-
-# Mocking a GRangesList as expected by the function output
+# Point the package at a temporary directory holding a small mock
+# object so the example runs without downloading from AnnotationHub.
+mock_dir <- file.path(tempdir(), "tfbs_example")
+dir.create(mock_dir, showWarnings = FALSE)
 mock_grl <- GenomicRanges::GRangesList(
-    mock_motif_1 = GenomicRanges::GRanges("chr1:100-200")
+    MA0001.1 = GenomicRanges::GRanges(
+        c("chr1:1001-1411", "chr2:5001-5411"),
+        strand = c("+", "-")
+    )
 )
-saveRDS(mock_grl, mock_file)
+saveRDS(mock_grl, file.path(mock_dir, "altius_tf_bindsites.rds"))
+old_opt <- options(methylTFRAnnotationHg38.datadir = mock_dir)
 
-# 2. Point the local directory option to the temp directory
-old_opt <- getOption("methylTFRAnnotationHg38.datadir")
-options(methylTFRAnnotationHg38.datadir = mock_dir)
+getTFbindsites("altius")
 
-# 3. Run the function
-x <- getTFbindsites()
-
-# 4. Restore options and clean up
-options(methylTFRAnnotationHg38.datadir = old_opt)
-file.remove(mock_file)
-
+options(old_opt)
+unlink(mock_dir, recursive = TRUE)
+}
+\seealso{
+\code{\link{tf_bindsites}}, \code{\link{getGCfreq}}
 }
