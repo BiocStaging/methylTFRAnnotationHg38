@@ -15,7 +15,7 @@ authors:
   - family-names: Mueller
     given-names: Fabian
     orcid: "https://orcid.org/0000-0001-5809-2321"
-version: 0.99.9
+version: 0.99.10
 date-released: "2026-09-29"
 doi: 10.18129/B9.bioc.methylTFRAnnotationHg38
 license: Artistic-2.0

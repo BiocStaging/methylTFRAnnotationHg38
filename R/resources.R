@@ -50,14 +50,18 @@
 #' and \code{system.file("extdata", "metadata.csv", package =
 #' "methylTFRAnnotationHg38")} for the exact sources and versions.
 #' @seealso \code{\link{getGCfreq}}, \code{\link{methylTFRAnnotationHg38}}
+#' @return This page documents a data resource rather than a
+#' function; the object is returned by \code{\link{getGCfreq}}.
 #' @examples
-#' ## On first use this downloads the resource from AnnotationHub:
-#' \dontrun{
-#' gcfreqs <- getGCfreq("jaspar2020")
-#' length(gcfreqs)          # number of motifs
-#' dim(gcfreqs[[1]])        # 5 x number of window positions
-#' colSums(gcfreqs[[1]])    # all 1
-#' }
+#' # AnnotationHub records of this resource and their descriptions
+#' md <- utils::read.csv(system.file("extdata", "metadata.csv",
+#'     package = "methylTFRAnnotationHg38"
+#' ))
+#' md[grepl("_motif_gcfreq", md$Title), c("Title", "RDataClass")]
+#'
+#' # Loading the resource downloads it from AnnotationHub on first use:
+#' # gcfreqs <- getGCfreq("jaspar2020")
+#' # length(gcfreqs); dim(gcfreqs[[1]]); colSums(gcfreqs[[1]])
 #' @keywords datasets
 NULL
 
@@ -90,14 +94,18 @@ NULL
 #' }
 #' @source See \code{\link{motif_gcfreq}}.
 #' @seealso \code{\link{getTFbindsites}}, \code{\link{methylTFRAnnotationHg38}}
+#' @return This page documents a data resource rather than a
+#' function; the object is returned by \code{\link{getTFbindsites}}.
 #' @examples
-#' ## On first use this downloads the resource from AnnotationHub:
-#' \dontrun{
-#' tfbs <- getTFbindsites("jaspar2020")
-#' length(tfbs)                 # number of motifs
-#' head(lengths(tfbs))          # binding sites per motif
-#' tfbs[[1]]
-#' }
+#' # AnnotationHub records of this resource and their descriptions
+#' md <- utils::read.csv(system.file("extdata", "metadata.csv",
+#'     package = "methylTFRAnnotationHg38"
+#' ))
+#' md[grepl("_tf_bindsites", md$Title), c("Title", "RDataClass")]
+#'
+#' # Loading the resource downloads it from AnnotationHub on first use:
+#' # tfbs <- getTFbindsites("jaspar2020")
+#' # length(tfbs); head(lengths(tfbs)); tfbs[[1]]
 #' @keywords datasets
 NULL
 
@@ -125,13 +133,17 @@ NULL
 #' \code{system.file("scripts", "make-data.R", package =
 #' "methylTFRAnnotationHg38")}.
 #' @seealso \code{\link{getGenomeGC}}, \code{\link{methylTFRAnnotationHg38}}
+#' @return This page documents a data resource rather than a
+#' function; the object is returned by \code{\link{getGenomeGC}}.
 #' @examples
-#' ## On first use this downloads the resource from AnnotationHub:
-#' \dontrun{
-#' gc <- getGenomeGC()
-#' gc
-#' table(gc$GC_bin)
-#' S4Vectors::metadata(gc)$gc_breaks
-#' }
+#' # AnnotationHub records of this resource and their descriptions
+#' md <- utils::read.csv(system.file("extdata", "metadata.csv",
+#'     package = "methylTFRAnnotationHg38"
+#' ))
+#' md[grepl("genomewide_GC", md$Title), c("Title", "RDataClass")]
+#'
+#' # Loading the resource downloads it from AnnotationHub on first use:
+#' # gc <- getGenomeGC()
+#' # table(gc$GC_bin); S4Vectors::metadata(gc)$gc_breaks
 #' @keywords datasets
 NULL

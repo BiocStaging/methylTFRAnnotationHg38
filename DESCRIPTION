@@ -21,7 +21,7 @@ Authors@R: c(
   )
 License: Artistic-2.0
 Encoding: UTF-8
-Version: 0.99.9
+Version: 0.99.10
 Depends: R (>= 4.3.0)
 Imports: AnnotationHub, GenomicRanges, stats
 Suggests: knitr, rmarkdown, testthat (>= 3.0.0), BiocStyle

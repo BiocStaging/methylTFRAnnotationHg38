@@ -22,6 +22,10 @@ Computed from the UCSC hg38 BSgenome package; see
 \code{system.file("scripts", "make-data.R", package =
 "methylTFRAnnotationHg38")}.
 }
+\value{
+This page documents a data resource rather than a
+function; the object is returned by \code{\link{getGenomeGC}}.
+}
 \description{
 GC content of the hg38 genome in non-overlapping 30 nt
 windows. Returned by \code{\link{getGenomeGC}}; the AnnotationHub
@@ -33,13 +37,15 @@ windows to assign it a GC bin; the motif tables in
 \code{\link{motif_gcfreq}} use the same boundaries.
 }
 \examples{
-## On first use this downloads the resource from AnnotationHub:
-\dontrun{
-gc <- getGenomeGC()
-gc
-table(gc$GC_bin)
-S4Vectors::metadata(gc)$gc_breaks
-}
+# AnnotationHub records of this resource and their descriptions
+md <- utils::read.csv(system.file("extdata", "metadata.csv",
+    package = "methylTFRAnnotationHg38"
+))
+md[grepl("genomewide_GC", md$Title), c("Title", "RDataClass")]
+
+# Loading the resource downloads it from AnnotationHub on first use:
+# gc <- getGenomeGC()
+# table(gc$GC_bin); S4Vectors::metadata(gc)$gc_breaks
 }
 \seealso{
 \code{\link{getGenomeGC}}, \code{\link{methylTFRAnnotationHg38}}

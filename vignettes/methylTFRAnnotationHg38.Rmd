@@ -18,9 +18,9 @@ hg38. It contains three kinds of resources, each with its own accessor:
 
 | Accessor | Returns | Help page |
 |---|---|---|
-| `getTFbindsites()` | TF binding sites, one `GRanges` per motif | `?tf_bindsites` |
-| `getGCfreq()` | motif GC frequency tables, one matrix per motif | `?motif_gcfreq` |
-| `getGenomeGC()` | genome-wide GC content in 30 nt windows | `?genomewide_GC` |
+| `getTFbindsites()` | TF binding sites (a `GRangesList`) | `?tf_bindsites` |
+| `getGCfreq()` | GC frequency tables, one per motif | `?motif_gcfreq` |
+| `getGenomeGC()` | GC content in 30 nt windows | `?genomewide_GC` |
 
 The GC tables are what make the deviation score bias-corrected. A motif
 whose binding sites sit in GC-rich sequence overlaps CpG islands more
