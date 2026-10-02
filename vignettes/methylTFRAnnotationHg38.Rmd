@@ -40,6 +40,9 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
     install.packages("BiocManager")
 }
 BiocManager::install("methylTFRAnnotationHg38")
+
+# methylTFR, which uses these annotations
+BiocManager::install("methylTFR")
 ```
 
 # Example data used in this vignette

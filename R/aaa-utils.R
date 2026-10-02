@@ -9,7 +9,24 @@
         "methylTFRAnnotationHg38.datadir",
         Sys.getenv("METHYL_TFRANNOTATION_HG38_DIR", "")
     )
-    if (is.character(d) && length(d) == 1L && nzchar(d)) d else NULL
+    if (is.null(d) || identical(d, "")) {
+        return(NULL)
+    }
+    if (!is.character(d) || length(d) != 1L || is.na(d)) {
+        stop(
+            "The option methylTFRAnnotationHg38.datadir must be a single ",
+            "character string (a directory path)."
+        )
+    }
+    if (!dir.exists(d)) {
+        stop(
+            "Local annotation directory does not exist: ", d,
+            "\nUnset options(methylTFRAnnotationHg38.datadir) and the ",
+            "METHYL_TFRANNOTATION_HG38_DIR environment variable ",
+            "to use AnnotationHub."
+        )
+    }
+    d
 }
 
 #' @keywords internal
